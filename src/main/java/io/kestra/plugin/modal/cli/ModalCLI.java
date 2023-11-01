@@ -35,7 +35,7 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
 @Plugin(
     examples = {
         @Example(
-            title = "Run python gpu script through modal",
+            title = "Execute a Python script on a GPU-powered instance in the cloud using [Modal](https://modal.com/). Make sure to add [the script](https://github.com/kestra-io/scripts/blob/main/modal/gpu.py) that you want to orchestrate as a Namespace File in the Editor and point to it in the `commands` section.",
             full = true,
             code = {
                 """
@@ -43,7 +43,7 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
                 namespace: dev
                 
                 tasks:
-                  - id: hello
+                  - id: modal_cli
                     type: io.kestra.plugin.modal.cli.ModalCLI
                     commands:
                       - modal run scripts/gpu.py
@@ -52,7 +52,34 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
                       MODAL_TOKEN_SECRET: "{{ secret('MODAL_TOKEN_SECRET') }}"
                 """
             }
-        )
+        ),
+        @Example(
+            title = "Execute a Python script from Git on a cloud VM using [Modal](https://modal.com/).",
+            full = true,
+            code = {
+                """
+                id: modal_git
+                namespace: dev
+
+                tasks:
+                  - id: repository
+                    type: io.kestra.core.tasks.flows.WorkingDirectory
+                    tasks:
+                      - id: clone
+                        type: io.kestra.plugin.git.Clone
+                        branch: main
+                        url: https://github.com/kestra-io/scripts
+
+                      - id: modal_cli
+                        type: io.kestra.plugin.modal.cli.ModalCLI
+                        commands:
+                          - modal run modal/getting_started.py
+                        env:
+                          MODAL_TOKEN_ID: "{{ secret('MODAL_TOKEN_ID') }}"
+                          MODAL_TOKEN_SECRET: "{{ secret('MODAL_TOKEN_SECRET') }}"
+                """
+            }
+        )        
     }
 )
 public class ModalCLI extends Task implements RunnableTask<ScriptOutput> {
