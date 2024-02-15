@@ -39,11 +39,14 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
             code = {
                 """
                 id: modal
+
                 namespace: dev
                 
                 tasks:
                   - id: modal_cli
                     type: io.kestra.plugin.modal.cli.ModalCLI
+                    namespaceFiles:
+                      enabled: true
                     commands:
                       - modal run scripts/gpu.py
                     env:
