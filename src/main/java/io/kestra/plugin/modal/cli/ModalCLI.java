@@ -65,7 +65,7 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
 
                 tasks:
                   - id: repository
-                    type: io.kestra.core.tasks.flows.WorkingDirectory
+                    type: io.kestra.plugin.core.flow.WorkingDirectory
                     tasks:
                       - id: clone
                         type: io.kestra.plugin.git.Clone
