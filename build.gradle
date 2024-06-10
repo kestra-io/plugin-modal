@@ -128,7 +128,7 @@ jar {
     manifest {
         attributes(
                 "X-Kestra-Name": project.name,
-                "X-Kestra-Title": "Modal CLI",
+                "X-Kestra-Title": "Modal",
                 "X-Kestra-Group": project.group + ".modal",
                 "X-Kestra-Description": project.description,
                 "X-Kestra-Version": project.version
