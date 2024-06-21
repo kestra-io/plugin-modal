@@ -39,8 +39,7 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
             code = {
                 """
                 id: modal
-
-                namespace: dev
+                namespace: company.team
                 
                 tasks:
                   - id: modal_cli
@@ -61,7 +60,7 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
             code = {
                 """
                 id: modal_git
-                namespace: dev
+                namespace: company.team
 
                 tasks:
                   - id: repository
