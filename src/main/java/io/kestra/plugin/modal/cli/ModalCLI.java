@@ -2,6 +2,7 @@ package io.kestra.plugin.modal.cli;
 
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
+import io.kestra.core.models.property.Property;
 import io.kestra.core.models.tasks.*;
 import io.kestra.core.models.tasks.runners.ScriptService;
 import io.kestra.core.models.tasks.runners.TaskRunner;
@@ -19,10 +20,8 @@ import io.kestra.core.runners.RunContext;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import java.util.*;
 
 import static io.kestra.core.utils.Rethrow.throwFunction;
 
@@ -106,11 +105,8 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
     @Schema(
         title = "Additional environment variables for the current process."
     )
-    @PluginProperty(
-        additionalProperties = String.class,
-        dynamic = true
-    )
-    protected Map<String, String> env;
+    @Builder.Default
+    protected Property<Map<String, String>> env = Property.of(new HashMap<>());
 
     @Schema(
         title = "Deprecated, use 'taskRunner' instead"
@@ -146,7 +142,7 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
             .withDockerOptions(injectDefaults(getDocker()))
             .withTaskRunner(this.taskRunner)
             .withContainerImage(this.containerImage)
-            .withEnv(Optional.ofNullable(env).orElse(new HashMap<>()))
+            .withEnv(this.env.asMap(runContext, String.class, String.class))
             .withNamespaceFiles(namespaceFiles)
             .withInputFiles(inputFiles)
             .withOutputFiles(outputFiles)

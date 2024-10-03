@@ -1,5 +1,6 @@
 package io.kestra.plugin.modal.cli;
 
+import io.kestra.core.models.property.Property;
 import io.kestra.core.utils.IdUtils;
 import io.kestra.core.utils.TestsUtils;
 import io.kestra.plugin.modal.cli.ModalCLI;
@@ -45,13 +46,47 @@ class ModalCLITest {
         assertThat(scriptOutput.getExitCode(), is(0));
 
         runner = terraformBuilder
-            .env(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}"))
+            .env(Property.of(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}")))
             .commands(List.of(
                 "echo \"::{\\\"outputs\\\":{" +
                     "\\\"customEnv\\\":\\\"$" + environmentKey + "\\\"" +
                     "}}::\"",
                 "modal --version | tr -d ' \n' | xargs -0 -I {} echo '::{\"outputs\":{}}::'"
                              ))
+            .build();
+
+        scriptOutput = runner.run(runContext);
+        assertThat(scriptOutput.getExitCode(), is(0));
+        assertThat(scriptOutput.getVars().get("customEnv"), is(environmentValue));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void testModal() throws Exception {
+        String environmentKey = "MY_KEY";
+        String environmentValue = "MY_VALUE";
+
+        ModalCLI.ModalCLIBuilder<?, ?> terraformBuilder = ModalCLI.builder()
+            .id(IdUtils.create())
+            .type(ModalCLI.class.getName())
+            .docker(DockerOptions.builder().image("ghcr.io/kestra-io/modal").entryPoint(Collections.emptyList()).build())
+            .commands(List.of("modal --version"));
+
+        ModalCLI runner = terraformBuilder.build();
+
+        RunContext runContext = TestsUtils.mockRunContext(runContextFactory, runner, Map.of("environmentKey", environmentKey, "environmentValue", environmentValue));
+
+        ScriptOutput scriptOutput = runner.run(runContext);
+        assertThat(scriptOutput.getExitCode(), is(0));
+
+        runner = terraformBuilder
+            .env(Property.of(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}")))
+            .commands(List.of(
+                "echo \"::{\\\"outputs\\\":{" +
+                    "\\\"customEnv\\\":\\\"$" + environmentKey + "\\\"" +
+                    "}}::\"",
+                "modal --version | tr -d ' \n' | xargs -0 -I {} echo '::{\"outputs\":{}}::'"
+            ))
             .build();
 
         scriptOutput = runner.run(runContext);
