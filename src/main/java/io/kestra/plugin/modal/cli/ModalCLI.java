@@ -36,23 +36,100 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
 @Plugin(
     examples = {
         @Example(
-            title = "Execute a Python script on a GPU-powered instance in the cloud using [Modal](https://modal.com/). Make sure to add [the script](https://github.com/kestra-io/scripts/blob/main/modal/gpu.py) that you want to orchestrate as a Namespace File in the Editor and point to it in the `commands` section.",
+            title = "Run a Hello-World [Modal](https://modal.com/) example. Make sure to replace the `MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET` with your Modal credentials.",
             full = true,
             code = {
                 """
-                id: modal
+                id: modal_hello_world
                 namespace: company.team
-                
                 tasks:
-                  - id: modal_cli
+                  - id: hello
                     type: io.kestra.plugin.modal.cli.ModalCLI
-                    namespaceFiles:
-                      enabled: true
+                    env:
+                      MODAL_TOKEN_ID: "your_modal_token_id"
+                      MODAL_TOKEN_SECRET: "your_modal_token_secret"
                     commands:
-                      - modal run scripts/gpu.py
+                      - modal run hello.py
+                    inputFiles:
+                    hello.py: |
+                      import modal
+  
+                      app = modal.App("hello-world")
+
+                      @app.function()
+                      def hello():
+                          print("hello from modal")
+                          return "Success!"
+                """
+            }
+        ),
+        @Example(
+            title = "Pass environment variables to the Modal CLI task from Kestra's inputs.",
+            full = true,
+            code = {
+                """
+                id: env_vars_modal
+                namespace: company.team
+                inputs:
+                  - id: run_modal
+                    displayName: Whether to run the Modal task
+                    type: BOOLEAN
+                    defaults: true
+                  - id: cpu
+                    type: SELECT
+                    displayName: CPU request
+                    description: The number of CPU cores to allocate to the container
+                    defaults: "0.25"
+                    values: ["0.25", "0.5", "0.75", "1.0", "1.5", "2.0", "4.0", "8.0", "16.0", "32.0"]
+                    dependsOn:
+                      inputs:
+                        - run_modal
+                      condition: "{{ inputs.run_modal equals true }}"
+
+                  - id: memory
+                    type: SELECT
+                    displayName: Memory request
+                    description: Amount of memory in MiB to allocate to the container
+                    defaults: "512"
+                    values: ["512", "1024", "2048", "4096", "8192", "16384", "32768"]
+                    dependsOn:
+                      inputs:
+                        - run_modal
+                      condition: "{{ inputs.run_modal }}"
+                tasks:
+                  - id: set_compute_resources
+                    type: io.kestra.plugin.modal.cli.ModalCLI
                     env:
                       MODAL_TOKEN_ID: "{{ secret('MODAL_TOKEN_ID') }}"
                       MODAL_TOKEN_SECRET: "{{ secret('MODAL_TOKEN_SECRET') }}"
+                      CPU: "{{ inputs.cpu }}"
+                      MEMORY: "{{ inputs.memory }}"
+                    commands:
+                      - modal run script.py
+                    inputFiles:
+                      script.py: |
+                        import os
+                        import modal
+
+                        app = modal.App(
+                            "env-vars",
+                            secrets=[modal.Secret.from_local_environ(env_keys=["CPU", "MEMORY"])],
+                        )
+
+
+                        @app.function(cpu=float(os.getenv("CPU")), memory=int(os.getenv("MEMORY")))
+                        def generate_data():
+                            cpu = os.getenv("CPU")
+                            memory = os.getenv("MEMORY")
+                            resources = dict(cpu=cpu, memory=memory)
+                            print(f"Running the function with CPU={cpu} and MEMORY={memory}")
+                            return resources
+
+
+                        @app.local_entrypoint()
+                        def main():
+                            output = generate_data.remote()
+                            print(f"hello from main function - output is: {output}")
                 """
             }
         ),
@@ -82,7 +159,28 @@ import static io.kestra.core.utils.Rethrow.throwFunction;
                           MODAL_TOKEN_SECRET: "{{ secret('MODAL_TOKEN_SECRET') }}"
                 """
             }
-        )        
+        ),
+        @Example(
+            title = "Execute a Python script on a GPU-powered instance in the cloud using [Modal](https://modal.com/). First, add [the script](https://github.com/kestra-io/scripts/blob/main/modal/gpu.py) that you want to orchestrate as a Namespace File in the Editor and point to it in the `commands` section.",
+            full = true,
+            code = {
+                """
+                id: modal
+                namespace: company.team
+                
+                tasks:
+                  - id: modal_cli
+                    type: io.kestra.plugin.modal.cli.ModalCLI
+                    namespaceFiles:
+                      enabled: true
+                    commands:
+                      - modal run gpu.py
+                    env:
+                      MODAL_TOKEN_ID: "{{ secret('MODAL_TOKEN_ID') }}"
+                      MODAL_TOKEN_SECRET: "{{ secret('MODAL_TOKEN_SECRET') }}"
+                """
+            }
+        )                
     }
 )
 public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, NamespaceFilesInterface, InputFilesInterface, OutputFilesInterface {
