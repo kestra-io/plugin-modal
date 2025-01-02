@@ -46,7 +46,7 @@ class ModalCLITest {
         assertThat(scriptOutput.getExitCode(), is(0));
 
         runner = terraformBuilder
-            .env(Property.of(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}")))
+            .env(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}"))
             .commands(List.of(
                 "echo \"::{\\\"outputs\\\":{" +
                     "\\\"customEnv\\\":\\\"$" + environmentKey + "\\\"" +
@@ -80,7 +80,7 @@ class ModalCLITest {
         assertThat(scriptOutput.getExitCode(), is(0));
 
         runner = terraformBuilder
-            .env(Property.of(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}")))
+            .env(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}"))
             .commands(List.of(
                 "echo \"::{\\\"outputs\\\":{" +
                     "\\\"customEnv\\\":\\\"$" + environmentKey + "\\\"" +
