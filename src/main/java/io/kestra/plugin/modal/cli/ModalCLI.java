@@ -191,10 +191,8 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
     @Schema(
         title = "The commands to run"
     )
-    @PluginProperty(dynamic = true)
     @NotNull
-    @NotEmpty
-    protected List<String> commands;
+    protected Property<List<String>> commands;
 
     @Schema(
         title = "Additional environment variables for the current process."
@@ -234,7 +232,6 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
     @Override
     public ScriptOutput run(RunContext runContext) throws Exception {
         var renderedOutputFiles = runContext.render(this.outputFiles).asList(String.class);
-        var renderedBeforeCommands = runContext.render(this.beforeCommands).asList(String.class);
 
         return new CommandsWrapper(runContext)
             .withWarningOnStdErr(true)
@@ -245,13 +242,9 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
             .withNamespaceFiles(namespaceFiles)
             .withInputFiles(inputFiles)
             .withOutputFiles(renderedOutputFiles.isEmpty() ? null : renderedOutputFiles)
-            .withCommands(
-                ScriptService.scriptCommands(
-                    List.of("/bin/sh", "-c"),
-                    renderedBeforeCommands.isEmpty() ? null : renderedBeforeCommands,
-                    runContext.render(this.commands)
-                )
-            )
+            .withInterpreter(Property.of(List.of("/bin/sh", "-c")))
+            .withBeforeCommands(this.beforeCommands)
+            .withCommands(this.commands)
             .run();
     }
 
