@@ -36,7 +36,7 @@ class ModalCLITest {
             .id(IdUtils.create())
             .type(ModalCLI.class.getName())
             .docker(DockerOptions.builder().image("ghcr.io/kestra-io/modal").entryPoint(Collections.emptyList()).build())
-            .commands(List.of("modal --version"));
+            .commands(Property.of(List.of("modal --version")));
 
         ModalCLI runner = terraformBuilder.build();
 
@@ -47,12 +47,12 @@ class ModalCLITest {
 
         runner = terraformBuilder
             .env(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}"))
-            .commands(List.of(
+            .commands(Property.of(List.of(
                 "echo \"::{\\\"outputs\\\":{" +
                     "\\\"customEnv\\\":\\\"$" + environmentKey + "\\\"" +
                     "}}::\"",
                 "modal --version | tr -d ' \n' | xargs -0 -I {} echo '::{\"outputs\":{}}::'"
-                             ))
+                             )))
             .build();
 
         scriptOutput = runner.run(runContext);
@@ -70,7 +70,7 @@ class ModalCLITest {
             .id(IdUtils.create())
             .type(ModalCLI.class.getName())
             .docker(DockerOptions.builder().image("ghcr.io/kestra-io/modal").entryPoint(Collections.emptyList()).build())
-            .commands(List.of("modal --version"));
+            .commands(Property.of(List.of("modal --version")));
 
         ModalCLI runner = terraformBuilder.build();
 
@@ -81,12 +81,12 @@ class ModalCLITest {
 
         runner = terraformBuilder
             .env(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}"))
-            .commands(List.of(
+            .commands(Property.of(List.of(
                 "echo \"::{\\\"outputs\\\":{" +
                     "\\\"customEnv\\\":\\\"$" + environmentKey + "\\\"" +
                     "}}::\"",
                 "modal --version | tr -d ' \n' | xargs -0 -I {} echo '::{\"outputs\":{}}::'"
-            ))
+            )))
             .build();
 
         scriptOutput = runner.run(runContext);
