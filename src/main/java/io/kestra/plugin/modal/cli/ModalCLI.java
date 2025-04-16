@@ -28,7 +28,7 @@ import java.util.*;
 @Getter
     @NoArgsConstructor
 @Schema(
-    title = "Execute Modal commands from the Command Line Interface"
+    title = "Execute Modal commands from the CLI."
 )
 @Plugin(
     examples = {
