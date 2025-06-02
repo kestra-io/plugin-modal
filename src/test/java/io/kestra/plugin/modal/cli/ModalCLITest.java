@@ -36,7 +36,7 @@ class ModalCLITest {
             .id(IdUtils.create())
             .type(ModalCLI.class.getName())
             .docker(DockerOptions.builder().image("ghcr.io/kestra-io/modal").entryPoint(Collections.emptyList()).build())
-            .commands(Property.of(List.of("modal --version")));
+            .commands(Property.ofValue(List.of("modal --version")));
 
         ModalCLI runner = terraformBuilder.build();
 
@@ -47,7 +47,7 @@ class ModalCLITest {
 
         runner = terraformBuilder
             .env(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}"))
-            .commands(Property.of(List.of(
+            .commands(Property.ofValue(List.of(
                 "echo \"::{\\\"outputs\\\":{" +
                     "\\\"customEnv\\\":\\\"$" + environmentKey + "\\\"" +
                     "}}::\"",
@@ -70,7 +70,7 @@ class ModalCLITest {
             .id(IdUtils.create())
             .type(ModalCLI.class.getName())
             .docker(DockerOptions.builder().image("ghcr.io/kestra-io/modal").entryPoint(Collections.emptyList()).build())
-            .commands(Property.of(List.of("modal --version")));
+            .commands(Property.ofValue(List.of("modal --version")));
 
         ModalCLI runner = terraformBuilder.build();
 
@@ -81,7 +81,7 @@ class ModalCLITest {
 
         runner = terraformBuilder
             .env(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}"))
-            .commands(Property.of(List.of(
+            .commands(Property.ofValue(List.of(
                 "echo \"::{\\\"outputs\\\":{" +
                     "\\\"customEnv\\\":\\\"$" + environmentKey + "\\\"" +
                     "}}::\"",
