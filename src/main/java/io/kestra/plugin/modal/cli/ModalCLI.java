@@ -221,7 +221,7 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
 
     @Schema(title = "The task runner container image, only used if the task runner is container-based.")
     @Builder.Default
-    private Property<String> containerImage = Property.of(DEFAULT_IMAGE);
+    private Property<String> containerImage = Property.ofValue(DEFAULT_IMAGE);
 
     private NamespaceFiles namespaceFiles;
 
@@ -242,7 +242,7 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
             .withNamespaceFiles(namespaceFiles)
             .withInputFiles(inputFiles)
             .withOutputFiles(renderedOutputFiles.isEmpty() ? null : renderedOutputFiles)
-            .withInterpreter(Property.of(List.of("/bin/sh", "-c")))
+            .withInterpreter(Property.ofValue(List.of("/bin/sh", "-c")))
             .withBeforeCommands(this.beforeCommands)
             .withCommands(this.commands)
             .run();
