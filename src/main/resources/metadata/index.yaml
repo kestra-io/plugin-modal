@@ -1,0 +1,8 @@
+group: io.kestra.plugin.modal
+name: "modal"
+title: "Modal"
+description: "Plugin Modal for Kestra"
+body: ""
+videos: []
+createdBy: "Kestra Core Team"
+managedBy: "Kestra Core Team"
