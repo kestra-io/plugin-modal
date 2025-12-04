@@ -1,8 +1,8 @@
 group: io.kestra.plugin.modal
 name: "modal"
 title: "Modal"
-description: "Plugin Modal for Kestra"
-body: ""
+description: "Tasks that run Modal workflows via the Modal CLI."
+body: "Use your Modal token and profile to execute Modal CLI commands from Kestra, letting you launch functions, manage deployments, or run images with captured output."
 videos: []
 createdBy: "Kestra Core Team"
 managedBy: "Kestra Core Team"
