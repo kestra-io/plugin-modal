@@ -1,8 +1,8 @@
 group: io.kestra.plugin.modal.cli
 name: "cli"
 title: "Modal CLI"
-description: "This sub-group of plugins contains tasks for using Modal."
-body: ""
+description: "Tasks that execute Modal CLI commands."
+body: "Provide Modal auth (token/profile) and the CLI command list to run functions or manage deployments from Kestra, capturing stdout/stderr and exit codes for orchestration."
 videos: []
 createdBy: "Kestra Core Team"
 managedBy: "Kestra Core Team"
