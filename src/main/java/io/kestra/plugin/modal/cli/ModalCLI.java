@@ -185,8 +185,8 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
     private static final String DEFAULT_IMAGE = "ghcr.io/kestra-io/modal";
 
     @Schema(
-    title = "Pre-commands to run first",
-    description = "Optional commands executed before the main Modal CLI commands using the same shell and environment."
+        title = "Pre-commands to run first",
+        description = "Optional commands executed before the main Modal CLI commands using the same shell and environment."
 )
     protected Property<List<String>> beforeCommands;
 
