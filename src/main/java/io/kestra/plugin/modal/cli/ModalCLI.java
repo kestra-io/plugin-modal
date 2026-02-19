@@ -28,7 +28,8 @@ import java.util.*;
 @Getter
     @NoArgsConstructor
 @Schema(
-    title = "Execute Modal commands from the CLI."
+    title = "Run Modal CLI commands",
+    description = "Executes Modal CLI steps inside a task-runner container (default `image ghcr.io/kestra-io/modal` using `/bin/sh -c`). Pass Modal tokens via environment variables; supports Namespace Files, input files, and optional output file collection."
 )
 @Plugin(
     examples = {
@@ -48,15 +49,15 @@ import java.util.*;
                     commands:
                       - modal run hello.py
                     inputFiles:
-                    hello.py: |
-                      import modal
+                      hello.py: |
+                        import modal
 
-                      app = modal.App("hello-world")
+                        app = modal.App("hello-world")
 
-                      @app.function()
-                      def hello():
-                          print("hello from modal")
-                          return "Success!"
+                        @app.function()
+                        def hello():
+                            print("hello from modal")
+                            return "Success!"
                 """
             }
         ),
@@ -81,7 +82,7 @@ import java.util.*;
                     dependsOn:
                       inputs:
                         - run_modal
-                      condition: "{{ inputs.run_modal equals true }}"
+                      condition: "{{ inputs.run_modal }}"
 
                   - id: memory
                     type: SELECT
@@ -184,18 +185,21 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
     private static final String DEFAULT_IMAGE = "ghcr.io/kestra-io/modal";
 
     @Schema(
-        title = "The commands to execute before the main list of commands"
-    )
+        title = "Pre-commands to run first",
+        description = "Optional commands executed before the main Modal CLI commands using the same shell and environment."
+)
     protected Property<List<String>> beforeCommands;
 
     @Schema(
-        title = "The commands to run"
+        title = "Modal CLI commands",
+        description = "Required list of CLI lines executed with /bin/sh -c inside the task runner container."
     )
     @NotNull
     protected Property<List<String>> commands;
 
     @Schema(
-        title = "Additional environment variables for the current process."
+        title = "Additional environment variables",
+        description = "Key-value pairs injected into the process environment; supports dynamic expressions."
     )
     @PluginProperty(
         additionalProperties = String.class,
@@ -219,7 +223,10 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
     @Valid
     private TaskRunner<?> taskRunner = Docker.instance();
 
-    @Schema(title = "The task runner container image, only used if the task runner is container-based.")
+    @Schema(
+        title = "Task runner container image",
+        description = "Container image used when the task runner is container-based; defaults to ghcr.io/kestra-io/modal."
+    )
     @Builder.Default
     private Property<String> containerImage = Property.ofValue(DEFAULT_IMAGE);
 
