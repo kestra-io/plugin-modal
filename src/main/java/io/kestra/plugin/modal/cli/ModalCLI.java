@@ -186,6 +186,7 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
         title = "Pre-commands to run first",
         description = "Optional commands executed before the main Modal CLI commands using the same shell and environment."
     )
+    @PluginProperty(group = "execution")
     protected Property<List<String>> beforeCommands;
 
     @Schema(
@@ -193,13 +194,14 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
         description = "Required list of CLI lines executed with /bin/sh -c inside the task runner container."
     )
     @NotNull
+    @PluginProperty(group = "main")
     protected Property<List<String>> commands;
 
     @Schema(
         title = "Additional environment variables",
         description = "Key-value pairs injected into the process environment; supports dynamic expressions."
     )
-    @PluginProperty(
+    @PluginProperty(group = "execution", 
         additionalProperties = String.class,
         dynamic = true
     )
@@ -208,7 +210,7 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
     @Schema(
         title = "Deprecated, use 'taskRunner' instead"
     )
-    @PluginProperty
+    @PluginProperty(group = "deprecated")
     @Deprecated
     private DockerOptions docker;
 
@@ -216,7 +218,7 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
         title = "The task runner to use.",
         description = "Task runners are provided by plugins, each have their own properties."
     )
-    @PluginProperty
+    @PluginProperty(group = "execution")
     @Builder.Default
     @Valid
     private TaskRunner<?> taskRunner = Docker.instance();
@@ -226,12 +228,16 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
         description = "Container image used when the task runner is container-based; defaults to ghcr.io/kestra-io/modal."
     )
     @Builder.Default
+    @PluginProperty(group = "execution")
     private Property<String> containerImage = Property.ofValue(DEFAULT_IMAGE);
 
+    @PluginProperty(group = "source")
     private NamespaceFiles namespaceFiles;
 
+    @PluginProperty(group = "source")
     private Object inputFiles;
 
+    @PluginProperty(group = "destination")
     private Property<List<String>> outputFiles;
 
     @Override
