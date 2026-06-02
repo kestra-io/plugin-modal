@@ -69,7 +69,7 @@ import lombok.experimental.SuperBuilder;
                     inputs:
                       - id: run_modal
                         displayName: Whether to run the Modal task
-                        type: BOOLEAN
+                        type: BOOL
                         defaults: true
                       - id: cpu
                         type: SELECT
