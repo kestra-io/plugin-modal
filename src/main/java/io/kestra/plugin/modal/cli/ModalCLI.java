@@ -215,7 +215,7 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
     private DockerOptions docker;
 
     @Schema(
-        title = "The task runner to use.",
+        title = "The task runner to use",
         description = "Task runners are provided by plugins, each have their own properties."
     )
     @PluginProperty(group = "execution")
