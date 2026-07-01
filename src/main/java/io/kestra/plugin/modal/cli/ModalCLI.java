@@ -201,10 +201,11 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
         title = "Additional environment variables",
         description = "Key-value pairs injected into the process environment; supports dynamic expressions."
     )
-    @PluginProperty(group = "execution", 
+    @PluginProperty(group = "execution",
         additionalProperties = String.class,
         dynamic = true
     )
+    @ToString.Exclude
     protected Map<String, String> env;
 
     @Schema(

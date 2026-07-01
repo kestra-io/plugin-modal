@@ -19,12 +19,33 @@ import jakarta.inject.Inject;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.containsString;
 
 @KestraTest
 class ModalCLITest {
 
     @Inject
     private RunContextFactory runContextFactory;
+
+    @Test
+    void toStringDoesNotExposeEnvSecrets() {
+        ModalCLI runner = ModalCLI.builder()
+            .id(IdUtils.create())
+            .type(ModalCLI.class.getName())
+            .commands(Property.ofValue(List.of("modal --version")))
+            .env(Map.of(
+                "MODAL_TOKEN_ID", "super-secret-token-id",
+                "MODAL_TOKEN_SECRET", "super-secret-token-secret"
+            ))
+            .build();
+
+        String representation = runner.toString();
+
+        assertThat(representation, not(containsString("super-secret-token-id")));
+        assertThat(representation, not(containsString("super-secret-token-secret")));
+        assertThat(representation, not(containsString("MODAL_TOKEN_ID")));
+    }
 
     @Test
     @SuppressWarnings("unchecked")
