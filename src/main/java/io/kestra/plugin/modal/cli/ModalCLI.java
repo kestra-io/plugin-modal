@@ -201,10 +201,11 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
         title = "Additional environment variables",
         description = "Key-value pairs injected into the process environment; supports dynamic expressions."
     )
-    @PluginProperty(group = "execution", 
+    @PluginProperty(group = "execution",
         additionalProperties = String.class,
         dynamic = true
     )
+    @ToString.Exclude
     protected Map<String, String> env;
 
     @Schema(
@@ -215,7 +216,7 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
     private DockerOptions docker;
 
     @Schema(
-        title = "The task runner to use.",
+        title = "The task runner to use",
         description = "Task runners are provided by plugins, each have their own properties."
     )
     @PluginProperty(group = "execution")
