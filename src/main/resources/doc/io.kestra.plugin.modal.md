@@ -4,7 +4,7 @@ Run Modal CLI commands from Kestra flows to deploy and invoke serverless functio
 
 ## Authentication
 
-Pass your Modal credentials via the `env` map using `MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET`. Store secrets in [secrets](https://kestra.io/docs/concepts/secret) and apply connection properties globally with [plugin defaults](https://kestra.io/docs/workflow-components/plugin-defaults).
+Pass your Modal credentials via the `env` map using `MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET`. Store secrets in [secrets](https://kestra.io/docs/concepts/secret) and set connection properties on each task.
 
 ## Tasks
 
