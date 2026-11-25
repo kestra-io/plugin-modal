@@ -188,7 +188,9 @@ public class ModalCLI extends AbstractExecScript implements RunnableTask<ScriptO
 
     @Schema(
         title = "Modal CLI commands",
-        description = "Required list of CLI lines executed through the `interpreter` (`/bin/sh -c` by default) inside the task runner container."
+        description = """
+            Required list of CLI lines executed through the `interpreter` (`/bin/sh -c` by default) inside the task runner container.
+            """
     )
     @NotNull
     @PluginProperty(group = "main")
@@ -222,8 +224,8 @@ public class ModalCLI extends AbstractExecScript implements RunnableTask<ScriptO
     @Schema(
         title = "Fail fast on the first failing command",
         description = """
-            If true, `set -e` is prepended to `beforeCommands`, so the first failing line stops the run.
-            Defaults to false, so a failing `beforeCommands` line does not stop the run.
+            If true, `set -e` is prepended to the script, so the first failing line in `beforeCommands` or `commands` stops the run.
+            Defaults to false, so a failing line does not stop the run.
             """
     )
     @Builder.Default
