@@ -29,7 +29,7 @@ import lombok.experimental.SuperBuilder;
 @Schema(
     title = "Run Modal CLI commands",
     description = """
-        Executes Modal CLI steps inside a task-runner container (default `image ghcr.io/kestra-io/modal` using `/bin/sh -c`). Pass Modal tokens via environment variables; supports Namespace Files, input files, and optional output file collection.
+        Executes Modal CLI steps inside a task-runner container (default image `ghcr.io/kestra-io/modal`, through the `interpreter`, `/bin/sh -c` by default). Pass Modal tokens via environment variables; supports Namespace Files, input files, and optional output file collection.
         The inherited `warningOnStdErr` and `runner` properties are ignored. The deprecated `docker` option only applies on Kestra 1.3, use `taskRunner`.
         """
 )
@@ -188,7 +188,7 @@ public class ModalCLI extends AbstractExecScript implements RunnableTask<ScriptO
 
     @Schema(
         title = "Modal CLI commands",
-        description = "Required list of CLI lines executed with /bin/sh -c inside the task runner container."
+        description = "Required list of CLI lines executed through the `interpreter` (`/bin/sh -c` by default) inside the task runner container."
     )
     @NotNull
     @PluginProperty(group = "main")

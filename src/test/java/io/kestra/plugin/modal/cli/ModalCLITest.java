@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import io.kestra.core.junit.annotations.KestraTest;
 import io.kestra.core.models.property.Property;
+import io.kestra.core.models.tasks.RunnableTaskException;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.kestra.core.utils.IdUtils;
@@ -22,6 +23,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @KestraTest
 class ModalCLITest {
@@ -135,5 +137,18 @@ class ModalCLITest {
             .build();
 
         assertThat(task.run(TestsUtils.mockRunContext(runContextFactory, task, Map.of())).getExitCode(), is(0));
+    }
+
+    @Test
+    void failFastStopsTheRunOnAFailingLine() {
+        var task = ModalCLI.builder()
+            .id(IdUtils.create())
+            .type(ModalCLI.class.getName())
+            .taskRunner(Process.instance())
+            .failFast(Property.ofValue(true))
+            .commands(Property.ofValue(List.of("false", "echo ok")))
+            .build();
+
+        assertThrows(RunnableTaskException.class, () -> task.run(TestsUtils.mockRunContext(runContextFactory, task, Map.of())));
     }
 }
