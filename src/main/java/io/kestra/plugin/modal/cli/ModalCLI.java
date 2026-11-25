@@ -1,17 +1,17 @@
 package io.kestra.plugin.modal.cli;
 
-import java.util.*;
+import java.util.List;
 
 import io.kestra.core.models.annotations.Example;
 import io.kestra.core.models.annotations.Plugin;
 import io.kestra.core.models.annotations.PluginProperty;
 import io.kestra.core.models.property.Property;
-import io.kestra.core.models.tasks.*;
+import io.kestra.core.models.tasks.RunnableTask;
 import io.kestra.core.models.tasks.runners.TaskRunner;
 import io.kestra.core.runners.RunContext;
+import io.kestra.plugin.scripts.exec.AbstractExecScript;
 import io.kestra.plugin.scripts.exec.scripts.models.DockerOptions;
 import io.kestra.plugin.scripts.exec.scripts.models.ScriptOutput;
-import io.kestra.plugin.scripts.exec.scripts.runners.CommandsWrapper;
 import io.kestra.plugin.scripts.runner.docker.Docker;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -21,13 +21,17 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 @SuperBuilder
-@ToString
+// callSuper = false: the inherited env has no @ToString.Exclude, keeps rendered secrets out
+@ToString(callSuper = false)
 @EqualsAndHashCode
 @Getter
 @NoArgsConstructor
 @Schema(
     title = "Run Modal CLI commands",
-    description = "Executes Modal CLI steps inside a task-runner container (default `image ghcr.io/kestra-io/modal` using `/bin/sh -c`). Pass Modal tokens via environment variables; supports Namespace Files, input files, and optional output file collection."
+    description = """
+        Executes Modal CLI steps inside a task-runner container (default `image ghcr.io/kestra-io/modal` using `/bin/sh -c`). Pass Modal tokens via environment variables; supports Namespace Files, input files, and optional output file collection.
+        The inherited `warningOnStdErr` and `runner` properties are ignored. The deprecated `docker` option only applies on Kestra 1.3, use `taskRunner`.
+        """
 )
 @Plugin(
     examples = {
@@ -179,15 +183,8 @@ import lombok.experimental.SuperBuilder;
         )
     }
 )
-public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, NamespaceFilesInterface, InputFilesInterface, OutputFilesInterface {
+public class ModalCLI extends AbstractExecScript implements RunnableTask<ScriptOutput> {
     private static final String DEFAULT_IMAGE = "ghcr.io/kestra-io/modal";
-
-    @Schema(
-        title = "Pre-commands to run first",
-        description = "Optional commands executed before the main Modal CLI commands using the same shell and environment."
-    )
-    @PluginProperty(group = "execution")
-    protected Property<List<String>> beforeCommands;
 
     @Schema(
         title = "Modal CLI commands",
@@ -197,17 +194,7 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
     @PluginProperty(group = "main")
     protected Property<List<String>> commands;
 
-    @Schema(
-        title = "Additional environment variables",
-        description = "Key-value pairs injected into the process environment; supports dynamic expressions."
-    )
-    @PluginProperty(group = "execution",
-        additionalProperties = String.class,
-        dynamic = true
-    )
-    @ToString.Exclude
-    protected Map<String, String> env;
-
+    // Kept here: core has no docker property from 2.0, flows using it would fail validation
     @Schema(
         title = "Deprecated, use 'taskRunner' instead"
     )
@@ -232,35 +219,29 @@ public class ModalCLI extends Task implements RunnableTask<ScriptOutput>, Namesp
     @PluginProperty(group = "execution")
     private Property<String> containerImage = Property.ofValue(DEFAULT_IMAGE);
 
-    @PluginProperty(group = "source")
-    private NamespaceFiles namespaceFiles;
-
-    @PluginProperty(group = "source")
-    private Object inputFiles;
-
-    @PluginProperty(group = "destination")
-    private Property<List<String>> outputFiles;
+    @Schema(
+        title = "Fail fast on the first failing command",
+        description = """
+            If true, `set -e` is prepended to `beforeCommands`, so the first failing line stops the run.
+            Defaults to false, so a failing `beforeCommands` line does not stop the run.
+            """
+    )
+    @Builder.Default
+    @PluginProperty(group = "execution")
+    protected Property<Boolean> failFast = Property.ofValue(false);
 
     @Override
     public ScriptOutput run(RunContext runContext) throws Exception {
-        var renderedOutputFiles = runContext.render(this.outputFiles).asList(String.class);
-
-        return new CommandsWrapper(runContext)
-            .withWarningOnStdErr(true)
-            .withDockerOptions(injectDefaults(getDocker()))
-            .withTaskRunner(this.taskRunner)
-            .withContainerImage(runContext.render(this.containerImage).as(String.class).orElse(null))
-            .withEnv(Optional.ofNullable(env).orElse(new HashMap<>()))
-            .withNamespaceFiles(namespaceFiles)
-            .withInputFiles(inputFiles)
-            .withOutputFiles(renderedOutputFiles.isEmpty() ? null : renderedOutputFiles)
-            .withInterpreter(Property.ofValue(List.of("/bin/sh", "-c")))
-            .withBeforeCommands(this.beforeCommands)
+        return this.commands(runContext)
+            .withInterpreter(this.getInterpreter())
+            .withBeforeCommands(this.getBeforeCommands())
+            .withBeforeCommandsWithOptions(true)
             .withCommands(this.commands)
             .run();
     }
 
-    private DockerOptions injectDefaults(DockerOptions original) {
+    @Override
+    protected DockerOptions injectDefaults(RunContext runContext, DockerOptions original) {
         if (original == null) {
             return null;
         }

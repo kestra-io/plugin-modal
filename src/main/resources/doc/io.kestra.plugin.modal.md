@@ -8,4 +8,4 @@ Pass your Modal credentials via the `env` map using `MODAL_TOKEN_ID` and `MODAL_
 
 ## Tasks
 
-`cli.ModalCLI` runs Modal CLI commands in a container (default image `ghcr.io/kestra-io/modal`) — set `commands` (required, list of shell commands to run). Use `beforeCommands` to run setup steps before the main commands. Pass credentials and other runtime values via `env` (a map of environment variables). Stage local files into the container with `inputFiles` and retrieve outputs with `outputFiles`.
+`cli.ModalCLI` runs Modal CLI commands in a container (default image `ghcr.io/kestra-io/modal`) — set `commands` (required, list of shell commands to run). Use `beforeCommands` to run setup steps before the main commands. Pass credentials and other runtime values via `env` (a map of environment variables). Stage local files into the container with `inputFiles` and retrieve outputs with `outputFiles`. On Kestra 2.1 and later, `durable: true` (beta) passes the keys a command printed as `::{"checkpoints": {...}}::` to the next attempt as `CHECKPOINTS_<KEY>` environment variables, so commands can skip the steps already done.
