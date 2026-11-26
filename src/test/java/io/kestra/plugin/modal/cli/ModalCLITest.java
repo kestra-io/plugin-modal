@@ -8,10 +8,12 @@ import org.junit.jupiter.api.Test;
 
 import io.kestra.core.junit.annotations.KestraTest;
 import io.kestra.core.models.property.Property;
+import io.kestra.core.models.tasks.RunnableTaskException;
 import io.kestra.core.runners.RunContext;
 import io.kestra.core.runners.RunContextFactory;
 import io.kestra.core.utils.IdUtils;
 import io.kestra.core.utils.TestsUtils;
+import io.kestra.plugin.core.runner.Process;
 import io.kestra.plugin.scripts.exec.scripts.models.DockerOptions;
 import io.kestra.plugin.scripts.exec.scripts.models.ScriptOutput;
 
@@ -21,6 +23,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @KestraTest
 class ModalCLITest {
@@ -34,10 +37,10 @@ class ModalCLITest {
             .id(IdUtils.create())
             .type(ModalCLI.class.getName())
             .commands(Property.ofValue(List.of("modal --version")))
-            .env(Map.of(
+            .env(Property.ofValue(Map.of(
                 "MODAL_TOKEN_ID", "super-secret-token-id",
                 "MODAL_TOKEN_SECRET", "super-secret-token-secret"
-            ))
+            )))
             .build();
 
         String representation = runner.toString();
@@ -67,7 +70,7 @@ class ModalCLITest {
         assertThat(scriptOutput.getExitCode(), is(0));
 
         runner = terraformBuilder
-            .env(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}"))
+            .env(Property.ofValue(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}")))
             .commands(
                 Property.ofValue(
                     List.of(
@@ -105,7 +108,7 @@ class ModalCLITest {
         assertThat(scriptOutput.getExitCode(), is(0));
 
         runner = terraformBuilder
-            .env(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}"))
+            .env(Property.ofValue(Map.of("{{ inputs.environmentKey }}", "{{ inputs.environmentValue }}")))
             .commands(
                 Property.ofValue(
                     List.of(
@@ -121,5 +124,31 @@ class ModalCLITest {
         scriptOutput = runner.run(runContext);
         assertThat(scriptOutput.getExitCode(), is(0));
         assertThat(scriptOutput.getVars().get("customEnv"), is(environmentValue));
+    }
+
+    @Test
+    void failingLineDoesNotStopTheRunByDefault() throws Exception {
+        var task = ModalCLI.builder()
+            .id(IdUtils.create())
+            .type(ModalCLI.class.getName())
+            .taskRunner(Process.instance())
+            .beforeCommands(Property.ofValue(List.of("false")))
+            .commands(Property.ofValue(List.of("false", "echo ok")))
+            .build();
+
+        assertThat(task.run(TestsUtils.mockRunContext(runContextFactory, task, Map.of())).getExitCode(), is(0));
+    }
+
+    @Test
+    void failFastStopsTheRunOnAFailingLine() {
+        var task = ModalCLI.builder()
+            .id(IdUtils.create())
+            .type(ModalCLI.class.getName())
+            .taskRunner(Process.instance())
+            .failFast(Property.ofValue(true))
+            .commands(Property.ofValue(List.of("false", "echo ok")))
+            .build();
+
+        assertThrows(RunnableTaskException.class, () -> task.run(TestsUtils.mockRunContext(runContextFactory, task, Map.of())));
     }
 }
